@@ -204,29 +204,51 @@
 
     <!-- JS start from here -->
     <script>
-      const cards = document.querySelectorAll(".value__item");
+      const cards = document.querySelectorAll(".value__item")
 
-      function updateXPosition() {
-        const centerY = window.innerHeight / 2;
+function updateXPosition() {
+  if (window.innerWidth <= 480) {
+    cards.forEach((card) => {
+      card.style.transform = "translateX(0)"
+    })
+    return
+  }
 
-        cards.forEach((card) => {
-          const rect = card.getBoundingClientRect();
-          const cardCenterY = rect.top + rect.height / 2;
-          const distance = Math.abs(centerY - cardCenterY);
+  const centerY = window.innerHeight / 2
 
-          const maxOffset = 200; // 最遠向右偏移量（單位：px）
-          const maxDistance = window.innerHeight / 2;
-          const ratio = Math.min(distance / maxDistance, 1); // 0 ~ 1
+  cards.forEach((card) => {
+    const rect = card.getBoundingClientRect()
+    const cardCenterY = rect.top + rect.height / 2
+    const distance = Math.abs(centerY - cardCenterY)
 
-          const offsetX = ratio * maxOffset;
+    const maxOffset = 60
+    const maxDistance = window.innerHeight / 2
+    const ratio = Math.min(distance / maxDistance, 1)
 
-          card.style.transform = `translateX(${offsetX}px)`;
-        });
-      }
+    const offsetX = ratio * maxOffset
+    const scale = 1 + (1 - ratio) * 0.1 // Center card slightly larger
+    const opacity = 0.7 + (1 - ratio) * 0.3 // Center card more opaque
 
-      window.addEventListener("scroll", updateXPosition);
-      window.addEventListener("resize", updateXPosition);
-      window.dispatchEvent(new Event("scroll"));
+    card.style.transform = `translateX(${offsetX}px) scale(${scale})`
+    card.style.opacity = opacity
+  })
+}
+
+let ticking = false
+function requestTick() {
+  if (!ticking) {
+    requestAnimationFrame(updateXPosition)
+    ticking = true
+    setTimeout(() => {
+      ticking = false
+    }, 16)
+  }
+}
+
+window.addEventListener("scroll", requestTick)
+window.addEventListener("resize", updateXPosition)
+window.dispatchEvent(new Event("scroll"))
+
     </script>
     <script>
       const experienceTitle = document.querySelector(".experience-animated");
