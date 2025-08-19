@@ -195,7 +195,7 @@ img {
   display: grid;
   place-items: center;
   padding: 12vh var(--space);
-  overflow-x: hidden; /* Added overflow hidden to prevent horizontal scroll */
+  /* Removed overflow-x: hidden to allow marquee animation to work */
 }
 
 .concept__wrap {
@@ -222,8 +222,22 @@ img {
   margin: 0;
   font-weight: 600;
   font-size: clamp(44px, 10vw, 120px);
-  animation: designsAnimation 3s ease-in-out infinite alternate;
-  transform-origin: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.2em;
+  overflow: hidden;
+}
+
+.concept__marquee {
+  margin-top: 10vh;
+  font-size: clamp(20px, 5.2vw, 64px);
+  opacity: 0.95;
+  white-space: nowrap;
+  will-change: transform;
+  animation: slideX linear both;
+  animation-timeline: view();
+  animation-range: contain 0% contain 100%;
 }
 
 .experience__headline {
@@ -438,6 +452,19 @@ img {
     font-size: clamp(32px, 8vw, 56px);
     word-break: break-word;
     line-height: 1.1;
+    flex-wrap: wrap;
+    gap: 0.1em;
+  }
+
+  .concept__marquee {
+    margin-top: 10vh;
+    font-size: clamp(20px, 5.2vw, 64px);
+    opacity: 0.95;
+    white-space: nowrap;
+    will-change: transform;
+    animation: slideX linear both;
+    animation-timeline: view();
+    animation-range: contain 0% contain 100%;
   }
 
   .concept__jp {
@@ -519,6 +546,17 @@ img {
     font-size: clamp(32px, 8vw, 56px);
     word-break: break-word;
     line-height: 1.1;
+  }
+
+  .concept__marquee {
+    margin-top: 10vh;
+    font-size: clamp(20px, 5.2vw, 64px);
+    opacity: 0.95;
+    white-space: nowrap;
+    will-change: transform;
+    animation: slideX linear both;
+    animation-timeline: view();
+    animation-range: contain 0% contain 100%;
   }
 
   .concept__jp {
@@ -626,34 +664,6 @@ img {
 }
 
 /* Added new keyframe animation for "Designs with Purpose" */
-@keyframes designsAnimation {
-  0% {
-    transform: translateX(-2%) scaleX(0.98);
-    letter-spacing: -0.03em;
-    opacity: 0.9;
-  }
-  25% {
-    transform: translateX(1%) scaleX(1.02);
-    letter-spacing: 0.01em;
-    opacity: 1;
-  }
-  50% {
-    transform: translateX(0%) scaleX(1);
-    letter-spacing: 0em;
-    opacity: 0.95;
-  }
-  75% {
-    transform: translateX(-1%) scaleX(0.99);
-    letter-spacing: -0.01em;
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(2%) scaleX(1.03);
-    letter-spacing: 0.02em;
-    opacity: 0.92;
-  }
-}
-
 @keyframes pulse {
   0% {
     transform: scale(0.92);
@@ -690,4 +700,95 @@ img {
 
 .value__item:first-child {
   border-top: 1px solid #dcd8d3;
+}
+
+.slide-text {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  width: min(92vw, 1200px);
+  line-height: 1.06;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: clamp(44px, 10vw, 120px);
+  text-align: center;
+  padding: 0;
+}
+
+.slide-text span {
+  display: block;
+  margin: 0;
+  padding: 0;
+  will-change: transform, opacity;
+  transition: transform 0.8s ease, opacity 0.8s ease;
+  opacity: 0;
+  transform: translateX(var(--tx, 0));
+}
+
+/* Initial positions: first line from left, second line from right */
+.slide-text span:first-child {
+  --tx: -30vw;
+}
+.slide-text span:last-child {
+  --tx: 30vw;
+}
+
+/* Enter animation: move to center + fade in (second line slightly delayed) */
+.slide-text.is-in span {
+  opacity: 1;
+  transform: translateX(0);
+}
+.slide-text.is-in span:last-child {
+  transition-delay: 0.08s;
+}
+
+/* Exit animation: both move left when leaving viewport */
+.slide-text.is-out span,
+.slide-text.leaving span {
+  opacity: 0;
+  transform: translateX(-30vw);
+}
+
+/* Reduced motion preference support */
+@media (prefers-reduced-motion: reduce) {
+  .slide-text span {
+    transition: none;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Simplified keyframes - slide in and stay visible, exit only when leaving viewport */
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-100vw);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Exit animation when leaving viewport */
+@keyframes slideOutLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100vw);
+    opacity: 0;
+  }
 }

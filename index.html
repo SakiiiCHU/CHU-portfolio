@@ -41,7 +41,11 @@
           想いが生まれたその瞬間から、ユーザーに届く体験へ。設計から実装までを一気通貫で支援し、<br />シンプルで誠実、使いやすさを起点に価値を育てます。
         </p>
         <div class="concept__headline">
-          <h2 class="stretch">Designs with Purpose</h2>
+          <!-- Replaced slide animation with WOWGOW-style letter-by-letter animation -->
+          <h2 class="slide-text">
+            <span>Designs with</span>
+            <span>Purpose</span>
+          </h2>
         </div>
         <div class="concept__marquee marquee">
           ARCHITECTURE • INTERACTION • 3D VISUALIZATION • INTERFACE • COLOR •
@@ -325,6 +329,34 @@ updateXPosition();
         el.scrollIntoView({ behavior: "smooth", block: "start" });
         // 清掉 hash，避免重新整理又跳
         history.replaceState(null, "", location.pathname + location.search);
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const headers = document.querySelectorAll('.slide-text');
+        if (!headers.length) return;
+
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            const el = entry.target;
+            if (entry.isIntersecting) {
+              el.classList.add('is-in');
+              el.classList.remove('is-out');
+            } else {
+              el.classList.remove('is-in');
+              el.classList.add('is-out');
+            }
+          });
+        }, { threshold: 0.35 });
+
+        headers.forEach(h => io.observe(h));
+
+        // Exit animation when leaving page
+        const leaveAll = () => headers.forEach(h => h.classList.add('leaving'));
+        window.addEventListener('pagehide', leaveAll);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') leaveAll();
+        });
       });
     </script>
     
