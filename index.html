@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CHU Portfolio — Smooth Scroll + Sticky Value</title>
+    <link rel="stylesheet" href="style.css" />
+
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="#hero">TOP</a>
+      <a href="#concept">CONCEPT</a>
+      <a href="#value">VALUE</a>
+      <a href="#sticky-value">EXPERIENCE</a>
+    </nav>
+
+    <!-- HERO -->
+    <!-- HERO -->
+    <header id="hero" class="hero">
+      <div class="hero__top-left reveal">
+        Designing clear experiences<br />from idea to delivery.
+      </div>
+      <h5 class="hero__title stretch">Sakiii CHU<br />Portfolio</h5>
+      <address class="hero__bottom-left">
+        Taipei, Taiwan<br />E-mail : tingccc93@gmail.com<br />GitHub :
+        https://github.com/SakiiiCHU
+      </address>
+      <div class="hero__bottom-right">Scroll Down</div>
+    </header>
+
+    <!-- CONCEPT -->
+    <section id="concept" class="concept">
+      <div class="concept__wrap">
+        <div class="eyebrow reveal">BUSINESS CONCEPT</div>
+        <p class="concept__jp reveal">
+          想いが生まれたその瞬間から、ユーザーに届く体験へ。設計から実装までを一気通貫で支援し、<br />シンプルで誠実、使いやすさを起点に価値を育てます。
+        </p>
+        <div class="concept__headline">
+          <h2 class="stretch">Designs with Purpose</h2>
+        </div>
+        <div class="concept__marquee marquee">
+          ARCHITECTURE • INTERACTION • 3D VISUALIZATION • INTERFACE • COLOR •
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUE -->
+    <section id="value" class="value">
+      <div class="value__head">
+        <h3 class="reveal">Our Value</h3>
+        <p class="reveal" style="max-width: 560px; color: var(--muted)">
+          ビジュアルとロジックの橋渡し。要件の解像度を上げ、正しく設計し、最後まで作り切る。
+        </p>
+      </div>
+      <div class="value__grid">
+        <article class="value__card reveal">
+          <div class="value__no">(01)</div>
+          <h4 class="value__title">Spatial Thinking</h4>
+          <p class="value__desc">
+            空間情報、動線分析、構造把握など。測量や建築的な視点で情報を整理し、画面構成に落とし込む。
+          </p>
+        </article>
+        <article class="value__card reveal">
+          <div class="value__no">(02)</div>
+          <h4 class="value__title">Interaction & Flow</h4>
+          <p class="value__desc">
+            スクロール、視線、操作感。動きすぎず、止まりすぎない。リズムのあるUIを目指す。
+          </p>
+        </article>
+        <article class="value__card reveal">
+          <div class="value__no">(03)</div>
+          <h4 class="value__title">Handcrafted Interfaces</h4>
+          <p class="value__desc">
+            HTML/CSSをベースに、構造・意味・可読性を意識したコードで実装。過剰な演出より、静かで気持ちの良い使いやすさを大切にする。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- STICKY VALUE SECTION -->
+    <section id="sticky-value" class="sticky-value">
+      <div class="value__grid--sticky container">
+        <!-- 左側：EXPERIENCE 標題 + 照片，一起 sticky 在左上 -->
+        <aside class="value__left">
+          <!-- <h2 class="experience__title stretch">EXPERIENCE</h2> -->
+          <h2 class="experience__title experience-animated">
+            <span>E</span><span>X</span><span>P</span><span>E</span
+            ><span>R</span><span>I</span><span>E</span><span>N</span
+            ><span>C</span><span>E</span>
+          </h2>
+
+          <div
+            class="circle"
+            style="
+              background-image: url('img/img-profile.jpg');
+              background-size: cover;
+              background-position: center;
+            "
+            aria-label="profile"
+          >
+            <div class="circle__inner"></div>
+          </div>
+        </aside>
+
+        <!-- 右側：可長內容，正常與整頁同一個捲動 -->
+        <div class="value__right">
+          <!-- EXPERIENCE SECTION -->
+          <article class="value__item">
+            <span style="font-size: 13px; color: #888">Sep. 2014 – Present</span
+            ><br />
+            <h2 class="value__title">
+              Technical Consultant /<br />Research Assistant
+            </h2>
+            <p class="value__desc">
+              <strong>Part-Time Project</strong><br />
+              （非常勤プロジェクト）<br />
+              • DSM and Building Reconstruction by UAV and Multi-View Images.<br />
+              • Applications of Augmented Reality.<br />
+              • Super Resolution Method for 3D Lidar Point Cloud Generation.<br />
+              • Thermal Transmittance Analysis for Opaque Building Envelope.
+            </p>
+          </article>
+
+          <article class="value__item">
+            <span style="font-size: 13px; color: #888"
+              >Apr. 2020 – Dec. 2020</span
+            ><br />
+            <h2 class="value__title">Assistant Researcher</h2>
+            <p class="value__desc">
+              <strong
+                >Department of Land and Administration, Ministry of the Interior
+                (MOI)</strong
+              ><br />
+              （内政部 土地管理局）<br />
+              • Processing spatial data to analyze offshore events and create
+              high-resolution maps.<br />
+              • Processing multi-source point cloud data.
+            </p>
+          </article>
+
+          <article class="value__item">
+            <span style="font-size: 13px; color: #888"
+              >Sep. 2018 – Dec. 2018</span
+            ><br />
+            <h2 class="value__title">
+              Research Assistant<br />(Construction Engineering and Management)
+            </h2>
+            <p class="value__desc">
+              <strong
+                >Department of Civil Engineering, National Taiwan University
+                (NTU)</strong
+              ><br />
+              （国立台湾大学 土木工学科）<br />
+              • Green and Sustainable Smart Building: enhancing comfort while
+              reducing energy use.<br />
+              • Developing Model Predictive Control (MPC) algorithms and
+              occupant-centered building management systems.
+            </p>
+          </article>
+
+          <!-- EDUCATION SECTION -->
+          <article class="value__item">
+            <div class="value__kicker">EDUCATION / 学歴</div>
+            <span style="font-size: 13px; color: #888">Sep. 2023 – Present</span
+            ><br />
+            <h2 class="value__title">Doctoral Degree Program</h2>
+            <p class="value__desc">
+              <strong
+                >Tokyo Institute of Technology (now Institute of Science
+                Tokyo)</strong
+              ><br />
+              （東京工業大学 → 現・東京科学大学 建築学系）<br />
+              Tokyo, Japan
+            </p>
+          </article>
+
+          <article class="value__item">
+            <span style="font-size: 13px; color: #888"
+              >Sep. 2016 – Jul. 2018</span
+            ><br />
+            <h2 class="value__title">Master of Science</h2>
+            <p class="value__desc">
+              <strong>National Taiwan University (NTU)</strong><br />
+              （国立台湾大学 土木工学科）<br />
+              Taipei, Taiwan
+            </p>
+          </article>
+
+          <article class="value__item">
+            <span style="font-size: 13px; color: #888"
+              >Sep. 2012 – Jun. 2016</span
+            ><br />
+            <h2 class="value__title">Bachelor of Arts</h2>
+            <p class="value__desc">
+              <strong>National Taipei University (NTPU)</strong><br />
+              （国立台北大学 不動産・建築環境学科）<br />
+              Taipei, Taiwan
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- JS start from here -->
+    <script>
+      const cards = document.querySelectorAll(".value__item");
+
+      function updateXPosition() {
+        const centerY = window.innerHeight / 2;
+
+        cards.forEach((card) => {
+          const rect = card.getBoundingClientRect();
+          const cardCenterY = rect.top + rect.height / 2;
+          const distance = Math.abs(centerY - cardCenterY);
+
+          const maxOffset = 200; // 最遠向右偏移量（單位：px）
+          const maxDistance = window.innerHeight / 2;
+          const ratio = Math.min(distance / maxDistance, 1); // 0 ~ 1
+
+          const offsetX = ratio * maxOffset;
+
+          card.style.transform = `translateX(${offsetX}px)`;
+        });
+      }
+
+      window.addEventListener("scroll", updateXPosition);
+      window.addEventListener("resize", updateXPosition);
+      window.dispatchEvent(new Event("scroll"));
+    </script>
+    <script>
+      const experienceTitle = document.querySelector(".experience-animated");
+      const spans = experienceTitle.querySelectorAll("span");
+
+      // 設定一開始亂飛的方向
+      spans.forEach((span, i) => {
+        const angle = Math.random() * 360;
+        const distance = 100 + Math.random() * 200;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+        const r = Math.random() * 360 - 180;
+        span.style.setProperty("--dx", `${dx}px`);
+        span.style.setProperty("--dy", `${dy}px`);
+        span.style.setProperty("--r", `${r}deg`);
+      });
+
+      // Intersection Observer：進入畫面時觸發 in-view
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              experienceTitle.classList.add("in-view");
+            }
+          });
+        },
+        {
+          threshold: 0.2,
+        }
+      );
+
+      observer.observe(experienceTitle);
+
+      // 滾動到一定位置後吸附左上角
+      window.addEventListener("scroll", () => {
+        const stickyTrigger = experienceTitle.getBoundingClientRect().top;
+        if (stickyTrigger <= 50) {
+          experienceTitle.classList.add("sticky");
+        } else {
+          experienceTitle.classList.remove("sticky");
+        }
+      });
+    </script>
+  </body>
+</html>
