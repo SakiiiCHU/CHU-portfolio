@@ -21,7 +21,11 @@
       <div class="hero__top-left reveal">
         Designing clear experiences<br />from idea to delivery.
       </div>
-      <h5 class="hero__title stretch">Sakiii CHU<br />Portfolio</h5>
+      <h5 class="hero__title stretch">
+  <span class="no-break sakiii-effect">Sakiii CHU</span><br />
+  Portfolio
+</h5>
+
       <address class="hero__bottom-left">
         Taipei, Taiwan<br />E-mail : tingccc93@gmail.com<br />GitHub :
         https://github.com/SakiiiCHU
@@ -247,7 +251,7 @@ function requestTick() {
 
 window.addEventListener("scroll", requestTick)
 window.addEventListener("resize", updateXPosition)
-window.dispatchEvent(new Event("scroll"))
+updateXPosition();
 
     </script>
     <script>
@@ -292,5 +296,37 @@ window.dispatchEvent(new Event("scroll"))
         }
       });
     </script>
+    <script>
+      // 1) 停用瀏覽器的自動卷軸還原
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+    
+      // 2) 載入時，如果網址有 #hash，清掉並回到最上方
+      window.addEventListener("load", () => {
+        if (location.hash) {
+          history.replaceState(null, "", location.pathname + location.search);
+        }
+        // 兩幀後再滾到頂，確保排版完成
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => window.scrollTo(0, 0));
+        });
+      });
+    
+      // 3) 攔截所有指向 #id 的連結，改用 JS 平滑捲動，且不改網址
+      document.addEventListener("click", (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if (!a) return;
+        const id = a.getAttribute("href");
+        if (id.length <= 1) return; // 跳過 href="#" 之類
+        const el = document.querySelector(id);
+        if (!el) return;
+        e.preventDefault();
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        // 清掉 hash，避免重新整理又跳
+        history.replaceState(null, "", location.pathname + location.search);
+      });
+    </script>
+    
   </body>
 </html>
