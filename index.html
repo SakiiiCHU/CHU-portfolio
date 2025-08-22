@@ -113,7 +113,7 @@
           <div
             class="circle"
             style="
-              background-image: url('img/img-profile.png');
+              background-image: url('img/img-profile.jpg');
               background-size: cover;
               background-position: center;
             "
@@ -766,19 +766,16 @@ updateXPosition();
           
           if (this.isAnimating && mainPointCloud) {
             const elapsed = Date.now() - this.animationStartTime;
-            const totalDuration = 12000;
+            const totalDuration = 6000;
             this.animationProgress = Math.min(elapsed / totalDuration, 1);
             
             let phaseProgress = 0;
-            if (this.animationProgress < 0.3) {
-              this.animationPhase = 0;
-              phaseProgress = this.animationProgress / 0.3;
-            } else if (this.animationProgress < 0.7) {
-              this.animationPhase = 1;
-              phaseProgress = (this.animationProgress - 0.3) / 0.4;
+            if (this.animationProgress < 0.4) {
+              this.animationPhase = 0; // Dispersed state
+              phaseProgress = this.animationProgress / 0.4;
             } else {
-              this.animationPhase = 2;
-              phaseProgress = (this.animationProgress - 0.7) / 0.3;
+              this.animationPhase = 1; // Convergence to final model
+              phaseProgress = (this.animationProgress - 0.4) / 0.6;
             }
             
             this.updateParticlePositions(phaseProgress);
@@ -812,37 +809,37 @@ updateXPosition();
           const particleCount = this.originalPositions.length / 3;
           
           for (let i = 0; i < particleCount; i++) {
+            const skipParticle = this.animationPhase === 0 && i % 3 !== 0; // Show only 1/3 particles during dispersed phase
+            
             const delay = this.particleDelays[i];
             const adjustedProgress = Math.max(0, Math.min(1, (phaseProgress - delay) / (1 - delay)));
             
-            let easing;
-            if (this.animationPhase === 0) {
-              easing = 1 - Math.pow(1 - adjustedProgress, 3);
-            } else if (this.animationPhase === 1) {
-              const wave = Math.sin(adjustedProgress * Math.PI * 2 + i * 0.1) * 0.5;
-              easing = adjustedProgress + wave * (1 - adjustedProgress);
-            } else {
-              easing = 1 - Math.pow(1 - adjustedProgress, 4);
-            }
+            const easing = 1 - Math.pow(1 - adjustedProgress, 3);
             
             let targetX, targetY, targetZ;
-            if (this.animationPhase < 2) {
-              const waveRadius = 6 - adjustedProgress * 2;
-              const waveAngle = (i / particleCount) * Math.PI * 4 + phaseProgress * Math.PI;
-              targetX = waveRadius * Math.cos(waveAngle);
-              targetY = Math.sin(waveAngle + i * 0.1) * 2;
-              targetZ = waveRadius * Math.sin(waveAngle);
+            if (this.animationPhase === 0) {
+              targetX = this.originalPositions[i * 3];
+              targetY = this.originalPositions[i * 3 + 1];
+              targetZ = this.originalPositions[i * 3 + 2];
             } else {
               targetX = this.targetPositions[i * 3];
               targetY = this.targetPositions[i * 3 + 1];
               targetZ = this.targetPositions[i * 3 + 2];
             }
             
-            currentPositions.push(
-              this.originalPositions[i * 3] + (targetX - this.originalPositions[i * 3]) * easing,
-              this.originalPositions[i * 3 + 1] + (targetY - this.originalPositions[i * 3 + 1]) * easing,
-              this.originalPositions[i * 3 + 2] + (targetZ - this.originalPositions[i * 3 + 2]) * easing
-            );
+            if (skipParticle) {
+              currentPositions.push(
+                this.originalPositions[i * 3],
+                this.originalPositions[i * 3 + 1] - 50, // Move skipped particles far away
+                this.originalPositions[i * 3 + 2]
+              );
+            } else {
+              currentPositions.push(
+                this.originalPositions[i * 3] + (targetX - this.originalPositions[i * 3]) * easing,
+                this.originalPositions[i * 3 + 1] + (targetY - this.originalPositions[i * 3 + 1]) * easing,
+                this.originalPositions[i * 3 + 2] + (targetZ - this.originalPositions[i * 3 + 2]) * easing
+              );
+            }
           }
           
           mainPointCloud.geometry.setAttribute('position', 
