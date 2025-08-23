@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CHU Portfolio — Smooth Scroll + Sticky Value</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHU-PORTFOLIO</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Added Pako CDN for gzip decompression -->
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
     <!-- Updated Three.js imports to use proper ES modules -->
     <script type="importmap">
       {
@@ -122,7 +124,7 @@
           <div
             class="circle"
             style="
-              background-image: url('img/img-profile.png');
+              background-image: url('img/img-profile.jpg');
               background-size: cover;
               background-position: center;
             "
@@ -136,7 +138,7 @@
         <div class="value__right">
           <!-- EXPERIENCE SECTION -->
           <article class="value__item">
-            <span style="font-size: 13px; color: #888">Sep. 2014 – Present</span
+            <span style="font-size: 11px; color: #888">Sep. 2014 – Present</span
             ><br />
             <h2 class="value__title">
               Technical Consultant /<br />Research Assistant
@@ -152,7 +154,7 @@
           </article>
 
           <article class="value__item">
-            <span style="font-size: 13px; color: #888"
+            <span style="font-size: 11px; color: #888"
               >Apr. 2020 – Dec. 2020</span
             ><br />
             <h2 class="value__title">Assistant Researcher</h2>
@@ -169,7 +171,7 @@
           </article>
 
           <article class="value__item">
-            <span style="font-size: 13px; color: #888"
+            <span style="font-size: 11px; color: #888"
               >Sep. 2018 – Dec. 2018</span
             ><br />
             <h2 class="value__title">
@@ -191,7 +193,7 @@
           <!-- EDUCATION SECTION -->
           <article class="value__item">
             <div class="value__kicker">EDUCATION / 学歴</div>
-            <span style="font-size: 13px; color: #888">Sep. 2023 – Present</span
+            <span style="font-size: 11px; color: #888">Sep. 2023 – Present</span
             ><br />
             <h2 class="value__title">Doctoral Degree Program</h2>
             <p class="value__desc">
@@ -205,7 +207,7 @@
           </article>
 
           <article class="value__item">
-            <span style="font-size: 13px; color: #888"
+            <span style="font-size: 11px; color: #888"
               >Sep. 2016 – Jul. 2018</span
             ><br />
             <h2 class="value__title">Master of Science</h2>
@@ -217,7 +219,7 @@
           </article>
 
           <article class="value__item">
-            <span style="font-size: 13px; color: #888"
+            <span style="font-size: 11px; color: #888"
               >Sep. 2012 – Jun. 2016</span
             ><br />
             <h2 class="value__title">Bachelor of Arts</h2>
@@ -546,18 +548,22 @@ updateXPosition();
         }
 
         loadBINFile() {
-          this.updateLoadingProgress(10, 'Loading point cloud files...');
+          this.updateLoadingProgress(10, 'Loading compressed point cloud files...');
           
-          const loadFile1 = fetch('./linkou_1.bin').then(response => {
+          const loadFile1 = fetch('./linkou_1.bin.gz').then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            this.updateLoadingProgress(30, 'Loading first point cloud...');
+            this.updateLoadingProgress(30, 'Decompressing first point cloud...');
             return response.arrayBuffer();
+          }).then(compressed => {
+            return window.pako.inflate(new Uint8Array(compressed)).buffer;
           });
           
-          const loadFile2 = fetch('./linkou_2.bin').then(response => {
+          const loadFile2 = fetch('./linkou_2.bin.gz').then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            this.updateLoadingProgress(50, 'Loading second point cloud...');
+            this.updateLoadingProgress(50, 'Decompressing second point cloud...');
             return response.arrayBuffer();
+          }).then(compressed => {
+            return window.pako.inflate(new Uint8Array(compressed)).buffer;
           });
           
           Promise.all([loadFile1, loadFile2])
@@ -568,9 +574,9 @@ updateXPosition();
             .catch(error => {
               console.warn('Dual BIN load failed:', error);
               this.updateLoadingProgress(40, 'Trying fallback loading...');
-              // Fallback to single file
-              fetch('./linkou_1.bin')
+              fetch('./linkou_1.bin.gz')
                 .then(response => response.arrayBuffer())
+                .then(compressed => window.pako.inflate(new Uint8Array(compressed)).buffer)
                 .then(buffer => {
                   this.updateLoadingProgress(70, 'Processing single point cloud...');
                   this.parseBinaryPointCloud(buffer);
@@ -660,7 +666,58 @@ updateXPosition();
         }
 
         parseBinaryPointCloud(buffer) {
-          // Existing code for parsing single binary point cloud
+          const pointSize = 15; // 12 bytes float + 3 bytes color
+          const numPoints = Math.floor(buffer.byteLength / pointSize);
+          
+          if (numPoints === 0) {
+            console.warn('No valid points found in binary data');
+            this.createFallbackParticles();
+            return;
+          }
+          
+          this.fullPositions = new Float32Array(numPoints * 3);
+          this.fullColors = new Float32Array(numPoints * 3);
+          
+          const dv = new DataView(buffer);
+          for (let i = 0; i < numPoints; i++) {
+            const offset = i * pointSize;
+            const x = dv.getFloat32(offset, true);
+            const y = dv.getFloat32(offset + 4, true);
+            const z = dv.getFloat32(offset + 8, true);
+            const r = dv.getUint8(offset + 12);
+            const g = dv.getUint8(offset + 13);
+            const b = dv.getUint8(offset + 14);
+            
+            this.fullPositions.set([x, y, z], i * 3);
+            this.fullColors.set([r / 255, g / 255, b / 255], i * 3);
+          }
+          
+          this.updateLoadingProgress(90, 'Creating particle system...');
+          
+          const animationPointCount = Math.floor(numPoints / 10);
+          const positions = new Float32Array(animationPointCount * 3);
+          const colors = new Float32Array(animationPointCount * 3);
+          
+          // Sample every 10th point for animation
+          for (let i = 0; i < animationPointCount; i++) {
+            const sourceIndex = i * 10;
+            positions.set([
+              this.fullPositions[sourceIndex * 3],
+              this.fullPositions[sourceIndex * 3 + 1],
+              this.fullPositions[sourceIndex * 3 + 2]
+            ], i * 3);
+            colors.set([
+              this.fullColors[sourceIndex * 3],
+              this.fullColors[sourceIndex * 3 + 1], 
+              this.fullColors[sourceIndex * 3 + 2]
+            ], i * 3);
+          }
+          
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+          geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+          
+          this.createParticleSystem(geometry);
         }
 
         createParticleSystem(geometry) {
@@ -717,7 +774,7 @@ updateXPosition();
           this.pointClouds.push(pointCloud);
           this.scene.add(pointCloud);
           
-          this.updateLoadingProgress(100, '100%');
+          this.updateLoadingProgress(100, 'Ready!');
           setTimeout(() => {
             this.hideLoader();
           }, 500);

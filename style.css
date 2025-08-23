@@ -24,7 +24,8 @@ html {
 
 body {
   margin: 0;
-  font: 16px / 1.5 system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans JP", "Noto Sans TC", sans-serif;
+  /* Reduced base font size from 16px to 13px (18% reduction) */
+  font: 13px / 1.5 system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans JP", "Noto Sans TC", sans-serif;
   color: var(--fg);
   background: var(--bg);
 }
@@ -102,7 +103,8 @@ img {
 }
 
 .eyebrow {
-  font-size: 13px;
+  /* Reduced font size from 13px to 11px (15% reduction) */
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   opacity: 0.7;
@@ -115,7 +117,8 @@ img {
   transform: translateX(-50%);
   display: flex;
   gap: 22px;
-  font-size: 14px;
+  /* Reduced font size from 14px to 12px (14% reduction) */
+  font-size: 12px;
   padding: 10px 16px;
   backdrop-filter: blur(6px);
   background: rgba(245, 243, 240, 0.6);
@@ -164,7 +167,8 @@ img {
   top: calc(var(--space) - 8px);
   left: var(--space);
   max-width: 520px;
-  font-size: 20px;
+  /* Reduced font size from 20px to 17px (15% reduction) */
+  font-size: 17px;
   line-height: 1.6;
 }
 
@@ -179,7 +183,8 @@ img {
   font-weight: 600;
   line-height: 1.06;
   letter-spacing: -0.5px;
-  font-size: clamp(50px, 10vw, 120px);
+  /* Reduced font size clamp values by ~17% (42px->50px, 8.5vw->10vw, 100px->120px) */
+  font-size: clamp(42px, 8.5vw, 100px);
 }
 
 .no-break {
@@ -190,7 +195,8 @@ img {
   position: absolute;
   left: var(--space);
   bottom: var(--space);
-  font-size: 14px;
+  /* Reduced font size from 14px to 12px (14% reduction) */
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -198,7 +204,8 @@ img {
   position: absolute;
   right: var(--space);
   bottom: var(--space);
-  font-size: 14px;
+  /* Reduced font size from 14px to 12px (14% reduction) */
+  font-size: 12px;
   opacity: 0.85;
 }
 
@@ -223,7 +230,8 @@ img {
 }
 
 .concept__jp {
-  font-size: clamp(14px, 2.2vw, 24px);
+  /* Reduced font size clamp values by ~17% (12px->14px, 1.8vw->2.2vw, 20px->24px) */
+  font-size: clamp(12px, 1.8vw, 20px);
   line-height: 1.8;
   margin: 0;
   word-wrap: break-word; /* Added word wrapping and overflow prevention for Japanese text */
@@ -239,7 +247,8 @@ img {
 .concept__headline h2 {
   margin: 0;
   font-weight: 600;
-  font-size: clamp(44px, 10vw, 120px);
+  /* Reduced font size clamp values by ~17% (37px->44px, 8.5vw->10vw, 100px->120px) */
+  font-size: clamp(37px, 8.5vw, 100px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -249,7 +258,8 @@ img {
 
 .concept__marquee {
   margin-top: 10vh;
-  font-size: clamp(20px, 5.2vw, 64px);
+  /* Reduced font size clamp values by ~17% (17px->20px, 4.3vw->5.2vw, 53px->64px) */
+  font-size: clamp(17px, 4.3vw, 53px);
   opacity: 0.95;
   white-space: nowrap;
   will-change: transform;
@@ -268,7 +278,8 @@ img {
   font-weight: 600;
   line-height: 1.06;
   letter-spacing: -0.02em;
-  font-size: clamp(44px, 10vw, 120px);
+  /* Reduced font size clamp values by ~17% (37px->44px, 8.5vw->10vw, 100px->120px) */
+  font-size: clamp(37px, 8.5vw, 100px);
 }
 
 .experience-animated {
@@ -276,7 +287,8 @@ img {
   gap: 0.02em;
   flex-wrap: nowrap;
   font-weight: 700;
-  font-size: clamp(44px, 10vw, 120px);
+  /* Reduced font size clamp values by ~17% (37px->44px, 8.5vw->10vw, 100px->120px) */
+  font-size: clamp(37px, 8.5vw, 100px);
   transform-origin: left top;
   position: relative;
   transition: transform 0.6s ease, font-size 0.6s ease;
@@ -298,7 +310,8 @@ img {
   position: fixed;
   top: 32px;
   left: 32px;
-  font-size: 28px;
+  /* Reduced font size from 28px to 24px (14% reduction) */
+  font-size: 24px;
   z-index: 100;
   transition: all 0.4s ease;
 }
@@ -332,14 +345,16 @@ img {
 }
 
 .value__no {
-  font-size: 13px;
+  /* Reduced font size from 13px to 11px (15% reduction) */
+  font-size: 11px;
   opacity: 0.6;
   margin-bottom: 10px;
 }
 
 .value__title {
   font-weight: 600;
-  font-size: clamp(18px, 2.2vw, 24px);
+  /* Reduced font size clamp values by ~17% (15px->18px, 1.8vw->2.2vw, 20px->24px) */
+  font-size: clamp(15px, 1.8vw, 20px);
   margin-bottom: 10px;
 }
 
@@ -378,7 +393,8 @@ img {
   font-weight: 600;
   line-height: 1.06;
   letter-spacing: -0.02em;
-  font-size: clamp(44px, 10vw, 120px);
+  /* Reduced font size clamp values by ~17% (37px->44px, 8.5vw->10vw, 100px->120px) */
+  font-size: clamp(37px, 8.5vw, 100px);
 }
 
 .experience__title span {
@@ -386,7 +402,8 @@ img {
 }
 
 .circle {
-  width: clamp(220px, 28vw, 360px);
+  /* Reduced circle size by 20% (clamp values: 176px->220px, 22.4vw->28vw, 288px->360px) */
+  width: clamp(176px, 22.4vw, 288px);
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   background: var(--dot);
@@ -429,7 +446,7 @@ img {
 }
 
 .value__right .value__title {
-  font-size: clamp(28px, 4.6vw, 56px);
+  font-size: clamp(23px, 3.8vw, 46px);
   line-height: 1.1;
   margin-bottom: 18px;
   overflow: visible;
@@ -728,7 +745,8 @@ img {
   line-height: 1.06;
   font-weight: 600;
   letter-spacing: -0.02em;
-  font-size: clamp(44px, 10vw, 120px);
+  /* Reduced font size clamp values by ~17% (37px->44px, 8.5vw->10vw, 100px->120px) */
+  font-size: clamp(37px, 8.5vw, 100px);
   text-align: center;
   padding: 0;
 }
@@ -808,7 +826,8 @@ img {
 }
 
 .pointcloud-title {
-  font-size: clamp(24px, 4vw, 48px);
+  /* Reduced font size clamp values by ~17% (20px->24px, 3.3vw->4vw, 40px->48px) */
+  font-size: clamp(20px, 3.3vw, 40px);
   font-weight: 600;
   margin: 0 0 10px 0;
   color: #00ffff;
@@ -816,7 +835,8 @@ img {
 }
 
 .pointcloud-subtitle {
-  font-size: clamp(14px, 2vw, 18px);
+  /* Reduced font size clamp values by ~17% (12px->14px, 1.7vw->2vw, 15px->18px) */
+  font-size: clamp(12px, 1.7vw, 15px);
   margin: 0 0 20px 0;
   opacity: 0.8;
 }
@@ -847,7 +867,8 @@ img {
   color: #00ffff;
   padding: 8px 16px;
   border-radius: 4px;
-  font-size: 12px;
+  /* Reduced font size from 12px to 10px (17% reduction) */
+  font-size: 10px;
   cursor: pointer;
   opacity: 0;
   transition: all 0.3s ease;
@@ -907,7 +928,8 @@ img {
 }
 
 .loader-text {
-  font-size: 14px;
+  /* Reduced font size from 14px to 12px (14% reduction) */
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 400;
   letter-spacing: 0.5px;
@@ -920,7 +942,8 @@ img {
   }
 
   .loader-text {
-    font-size: 12px;
+    /* Reduced font size from 12px to 10px (17% reduction) */
+    font-size: 10px;
   }
 }
 
@@ -930,6 +953,7 @@ img {
   }
 
   .loader-text {
-    font-size: 11px;
+    /* Reduced font size from 11px to 9px (18% reduction) */
+    font-size: 9px;
   }
 }
