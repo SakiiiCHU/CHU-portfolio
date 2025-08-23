@@ -857,3 +857,79 @@ img {
   background: rgba(0, 255, 255, 0.2);
   border-color: rgba(0, 255, 255, 0.5);
 }
+
+/* Added elegant loading indicator styles for point cloud */
+.pointcloud-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 10, 10, 0.95) 0%,
+    rgba(26, 26, 46, 0.95) 50%,
+    rgba(22, 33, 62, 0.95) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.pointcloud-loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader-content {
+  text-align: center;
+  color: white;
+}
+
+.loader-bar {
+  width: 200px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 auto 16px auto;
+  position: relative;
+}
+
+.loader-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #0080ff);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.loader-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+/* Added responsive styles for loading indicator */
+@media (max-width: 768px) {
+  .loader-bar {
+    width: 150px;
+  }
+
+  .loader-text {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loader-bar {
+    width: 120px;
+  }
+
+  .loader-text {
+    font-size: 11px;
+  }
+}

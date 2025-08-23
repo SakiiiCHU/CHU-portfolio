@@ -21,14 +21,23 @@
       <a href="#concept">CONCEPT</a>
       <a href="#value">VALUE</a>
       <a href="#sticky-value">EXPERIENCE</a>
-      <!-- Added navigation link to point cloud section -->
-      <a href="#pointcloud">3D DEMO</a>
+      <!-- Removed unused pointcloud navigation link -->
     </nav>
 
     <!-- HERO -->
     <header id="hero" class="hero">
       <!-- Added 3D point cloud canvas as background -->
       <canvas id="hero-pointcloud" class="hero__background"></canvas>
+      
+      <!-- Added elegant loading indicator for point cloud -->
+      <div id="pointcloud-loader" class="pointcloud-loader">
+        <div class="loader-content">
+          <div class="loader-bar">
+            <div class="loader-progress" id="loader-progress"></div>
+          </div>
+          <div class="loader-text" id="loader-text">Loading 3D Background... 0%</div>
+        </div>
+      </div>
       
       <div class="hero__top-left reveal">
         Designing clear experiences<br />from idea to delivery.
@@ -113,7 +122,7 @@
           <div
             class="circle"
             style="
-              background-image: url('img/img-profile.jpg');
+              background-image: url('img/img-profile.png');
               background-size: cover;
               background-position: center;
             "
@@ -394,9 +403,32 @@ updateXPosition();
           this.particleDelays = [];
           this.originalColors = [];
           this.targetColors = [];
+          this.fullPositions = null;
+          this.fullColors = null;
+          this.hasUpgraded = false;
+          
+          this.loaderElement = document.getElementById('pointcloud-loader');
+          this.loaderProgress = document.getElementById('loader-progress');
+          this.loaderText = document.getElementById('loader-text');
           
           this.init();
           this.setupPageVisibilityHandling();
+        }
+
+        updateLoadingProgress(progress, text = '') {
+          if (this.loaderProgress && this.loaderText) {
+            this.loaderProgress.style.width = `${progress}%`;
+            this.loaderText.textContent = text || `Loading 3D Background... ${Math.round(progress)}%`;
+          }
+        }
+
+        hideLoader() {
+          if (this.loaderElement) {
+            this.loaderElement.style.opacity = '0';
+            setTimeout(() => {
+              this.loaderElement.style.display = 'none';
+            }, 500);
+          }
         }
 
         setupPageVisibilityHandling() {
@@ -514,33 +546,45 @@ updateXPosition();
         }
 
         loadBINFile() {
+          this.updateLoadingProgress(10, 'Loading point cloud files...');
+          
           const loadFile1 = fetch('./linkou_1.bin').then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            this.updateLoadingProgress(30, 'Loading first point cloud...');
             return response.arrayBuffer();
           });
           
           const loadFile2 = fetch('./linkou_2.bin').then(response => {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            this.updateLoadingProgress(50, 'Loading second point cloud...');
             return response.arrayBuffer();
           });
           
           Promise.all([loadFile1, loadFile2])
             .then(([buffer1, buffer2]) => {
+              this.updateLoadingProgress(70, 'Processing point cloud data...');
               this.parseDualBinaryPointClouds(buffer1, buffer2);
             })
             .catch(error => {
               console.warn('Dual BIN load failed:', error);
+              this.updateLoadingProgress(40, 'Trying fallback loading...');
               // Fallback to single file
               fetch('./linkou_1.bin')
                 .then(response => response.arrayBuffer())
-                .then(buffer => this.parseBinaryPointCloud(buffer))
+                .then(buffer => {
+                  this.updateLoadingProgress(70, 'Processing single point cloud...');
+                  this.parseBinaryPointCloud(buffer);
+                })
                 .catch(() => {
+                  this.updateLoadingProgress(80, 'Creating fallback particles...');
                   this.createFallbackParticles();
                 });
             });
         }
 
         parseDualBinaryPointClouds(buffer1, buffer2) {
+          this.updateLoadingProgress(80, 'Parsing binary data...');
+          
           const pointSize = 15; // 12 bytes float + 3 bytes color
           const numPoints1 = Math.floor(buffer1.byteLength / pointSize);
           const numPoints2 = Math.floor(buffer2.byteLength / pointSize);
@@ -552,8 +596,8 @@ updateXPosition();
             return;
           }
           
-          const positions = new Float32Array(totalPoints * 3);
-          const colors = new Float32Array(totalPoints * 3);
+          this.fullPositions = new Float32Array(totalPoints * 3);
+          this.fullColors = new Float32Array(totalPoints * 3);
           
           // Parse first file
           const dv1 = new DataView(buffer1);
@@ -566,8 +610,8 @@ updateXPosition();
             const g = dv1.getUint8(offset + 13);
             const b = dv1.getUint8(offset + 14);
             
-            positions.set([x, y, z], i * 3);
-            colors.set([r / 255, g / 255, b / 255], i * 3);
+            this.fullPositions.set([x, y, z], i * 3);
+            this.fullColors.set([r / 255, g / 255, b / 255], i * 3);
           }
           
           // Parse second file
@@ -582,11 +626,32 @@ updateXPosition();
             const b = dv2.getUint8(offset + 14);
             
             const targetIndex = (numPoints1 + i) * 3;
-            positions.set([x, y, z], targetIndex);
-            colors.set([r / 255, g / 255, b / 255], targetIndex);
+            this.fullPositions.set([x, y, z], targetIndex);
+            this.fullColors.set([r / 255, g / 255, b / 255], targetIndex);
           }
           
-          // Create combined geometry
+          this.updateLoadingProgress(90, 'Creating particle system...');
+          
+          const animationPointCount = Math.floor(totalPoints / 10);
+          const positions = new Float32Array(animationPointCount * 3);
+          const colors = new Float32Array(animationPointCount * 3);
+          
+          // Sample every 10th point for animation
+          for (let i = 0; i < animationPointCount; i++) {
+            const sourceIndex = i * 10;
+            positions.set([
+              this.fullPositions[sourceIndex * 3],
+              this.fullPositions[sourceIndex * 3 + 1],
+              this.fullPositions[sourceIndex * 3 + 2]
+            ], i * 3);
+            colors.set([
+              this.fullColors[sourceIndex * 3],
+              this.fullColors[sourceIndex * 3 + 1],
+              this.fullColors[sourceIndex * 3 + 2]
+            ], i * 3);
+          }
+          
+          // Create animation geometry with reduced points
           const geometry = new THREE.BufferGeometry();
           geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
           geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -599,6 +664,8 @@ updateXPosition();
         }
 
         createParticleSystem(geometry) {
+          this.updateLoadingProgress(95, 'Initializing 3D scene...');
+          
           const material = new THREE.PointsMaterial({
             size: 0.03,
             vertexColors: true,
@@ -650,6 +717,11 @@ updateXPosition();
           this.pointClouds.push(pointCloud);
           this.scene.add(pointCloud);
           
+          this.updateLoadingProgress(100, '100%');
+          setTimeout(() => {
+            this.hideLoader();
+          }, 500);
+          
           this.startAnimation();
         }
 
@@ -680,6 +752,8 @@ updateXPosition();
         }
 
         createFallbackParticles() {
+          this.updateLoadingProgress(90, 'Creating fallback particles...');
+          
           const particleCount = 2000;
           
           // Create target positions in sphere formation
@@ -719,6 +793,11 @@ updateXPosition();
           const pointCloud = new THREE.Points(geometry, material);
           this.pointClouds.push(pointCloud);
           this.scene.add(pointCloud);
+          
+          this.updateLoadingProgress(100, 'Ready!');
+          setTimeout(() => {
+            this.hideLoader();
+          }, 500);
           
           this.startAnimation();
         }
@@ -830,6 +909,52 @@ updateXPosition();
           mainPointCloud.geometry.setAttribute('color', 
             new THREE.Float32BufferAttribute(currentColors, 3));
           mainPointCloud.geometry.attributes.color.needsUpdate = true;
+          
+          if (progress >= 1 && this.fullPositions && this.fullColors) {
+            this.switchToFullResolution();
+          }
+        }
+
+        switchToFullResolution() {
+          if (this.hasUpgraded) return; // Prevent multiple upgrades
+          this.hasUpgraded = true;
+          
+          const mainPointCloud = this.pointClouds[0];
+          if (!mainPointCloud) return;
+          
+          // Process full resolution data
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute('position', new THREE.BufferAttribute(this.fullPositions.slice(), 3));
+          geometry.setAttribute('color', new THREE.BufferAttribute(this.fullColors.slice(), 3));
+          
+          // Apply same transformations as animation version
+          geometry.computeBoundingBox();
+          const box = geometry.boundingBox;
+          const center = new THREE.Vector3();
+          box.getCenter(center);
+          geometry.translate(-center.x, -center.y, -center.z);
+          
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 12 / maxDim;
+          geometry.scale(scale, scale, scale);
+          
+          // Apply coordinate transformation (x, z, y)
+          const positions = geometry.attributes.position.array;
+          for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i];
+            const y = positions[i + 1];
+            const z = positions[i + 2];
+            positions[i] = x;
+            positions[i + 1] = z;
+            positions[i + 2] = y;
+          }
+          geometry.attributes.position.needsUpdate = true;
+          
+          // Replace geometry with full resolution version
+          mainPointCloud.geometry.dispose();
+          mainPointCloud.geometry = geometry;
         }
 
         onWindowResize() {
@@ -844,6 +969,10 @@ updateXPosition();
           new PointCloudEffect();
         } catch (error) {
           console.error('Failed to initialize dual point cloud:', error);
+          const loader = document.getElementById('pointcloud-loader');
+          if (loader) {
+            loader.style.display = 'none';
+          }
         }
       });
     </script>
