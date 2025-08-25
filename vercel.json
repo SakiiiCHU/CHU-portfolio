@@ -1,7 +1,7 @@
 {
   "headers": [
     {
-      "source": "/(.*)\\.bin\\.gz$",
+      "source": "/(.*)\\.bin\\.gz",
       "headers": [
         {
           "key": "Content-Encoding",
