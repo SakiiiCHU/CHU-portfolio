@@ -1,6 +1,38 @@
 // Three.js Point Cloud Visualization
 import * as THREE from "three"
 
+let simulatedProgress = 0
+let animationFrameId
+
+function simulateProgressLoading(onComplete) {
+  const targetProgress = 90 + Math.random() * 10 // 模擬最多90-99%
+  function animate() {
+    simulatedProgress += (targetProgress - simulatedProgress) * 0.05
+    updateProgressBar(simulatedProgress)
+    if (simulatedProgress < targetProgress - 0.5) {
+      animationFrameId = requestAnimationFrame(animate)
+    } else {
+      cancelAnimationFrame(animationFrameId)
+      onComplete() // 等 fetch + 解壓完成再觸發這個補滿
+    }
+  }
+  animate()
+}
+
+function completeProgressBar() {
+  simulatedProgress = 100
+  updateProgressBar(simulatedProgress)
+}
+
+function updateProgressBar(progress) {
+  const loaderProgress = document.getElementById("loader-progress")
+  const loaderText = document.getElementById("loader-text")
+  if (loaderProgress && loaderText) {
+    loaderProgress.style.width = `${progress}%`
+    loaderText.textContent = `Loading 3D Background... ${Math.round(progress)}%`
+  }
+}
+
 class PointCloudEffect {
   constructor() {
     this.scene = null
@@ -31,10 +63,7 @@ class PointCloudEffect {
   }
 
   updateLoadingProgress(progress, text = "") {
-    if (this.loaderProgress && this.loaderText) {
-      this.loaderProgress.style.width = `${progress}%`
-      this.loaderText.textContent = text || `Loading 3D Background... ${Math.round(progress)}%`
-    }
+    updateProgressBar(progress)
   }
 
   hideLoader() {
@@ -161,141 +190,76 @@ class PointCloudEffect {
   }
 
   loadBINFile() {
-    this.updateLoadingProgress(10, "Loading compressed point cloud files...")
+    simulateProgressLoading(() => {
+      this.loadPreviewFiles()
+    })
+  }
 
-    const loadFile1 = fetch("./linkou_1.bin.gz")
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-        this.updateLoadingProgress(30, "Decompressing first point cloud...")
-        return response.arrayBuffer()
-      })
-      .then((compressed) => {
-        return window.pako.inflate(new Uint8Array(compressed)).buffer
-      })
+  loadPreviewFiles() {
+    console.log("[v0] Loading preview files first...")
 
-    const loadFile2 = fetch("./linkou_2.bin.gz")
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-        this.updateLoadingProgress(50, "Decompressing second point cloud...")
-        return response.arrayBuffer()
-      })
-      .then((compressed) => {
-        return window.pako.inflate(new Uint8Array(compressed)).buffer
-      })
+    Promise.all([this.loadSingleFile("./linkou_1_preview.bin.gz"), this.loadSingleFile("./linkou_2_preview.bin.gz")])
+      .then((results) => {
+        const [data1, data2] = results
+        if (data1 && data2) {
+          console.log("[v0] Preview files loaded successfully")
+          this.createPreviewPointCloud(data1, data2)
+          completeProgressBar()
+          this.hideLoader()
 
-    Promise.all([loadFile1, loadFile2])
-      .then(([buffer1, buffer2]) => {
-        this.updateLoadingProgress(70, "Processing point cloud data...")
-        this.parseDualBinaryPointClouds(buffer1, buffer2)
+          // Start loading full resolution files in background
+          this.loadFullResolutionFiles()
+        } else {
+          throw new Error("Failed to load preview files")
+        }
       })
       .catch((error) => {
-        console.warn("Dual BIN load failed:", error)
-        this.updateLoadingProgress(40, "Trying fallback loading...")
-        fetch("./linkou_1.bin.gz")
-          .then((response) => response.arrayBuffer())
-          .then((compressed) => window.pako.inflate(new Uint8Array(compressed)).buffer)
-          .then((buffer) => {
-            this.updateLoadingProgress(70, "Processing single point cloud...")
-            this.parseBinaryPointCloud(buffer)
-          })
-          .catch(() => {
-            this.updateLoadingProgress(80, "Creating fallback particles...")
-            this.createFallbackParticles()
-          })
+        console.log("[v0] Preview files load failed, creating fallback particles:", error)
+        this.createFallbackParticles()
+        completeProgressBar()
+        this.hideLoader()
       })
   }
 
-  parseDualBinaryPointClouds(buffer1, buffer2) {
-    this.updateLoadingProgress(80, "Parsing binary data...")
+  loadFullResolutionFiles() {
+    console.log("[v0] Loading full resolution files in background...")
 
-    const pointSize = 15 // 12 bytes float + 3 bytes color
-    const numPoints1 = Math.floor(buffer1.byteLength / pointSize)
-    const numPoints2 = Math.floor(buffer2.byteLength / pointSize)
-    const totalPoints = numPoints1 + numPoints2
-
-    if (totalPoints === 0) {
-      console.warn("No valid points found in binary data")
-      this.createFallbackParticles()
-      return
-    }
-
-    this.fullPositions = new Float32Array(totalPoints * 3)
-    this.fullColors = new Float32Array(totalPoints * 3)
-
-    // Parse first file
-    const dv1 = new DataView(buffer1)
-    for (let i = 0; i < numPoints1; i++) {
-      const offset = i * pointSize
-      const x = dv1.getFloat32(offset, true)
-      const y = dv1.getFloat32(offset + 4, true)
-      const z = dv1.getFloat32(offset + 8, true)
-      const r = dv1.getUint8(offset + 12)
-      const g = dv1.getUint8(offset + 13)
-      const b = dv1.getUint8(offset + 14)
-
-      this.fullPositions.set([x, y, z], i * 3)
-      this.fullColors.set([r / 255, g / 255, b / 255], i * 3)
-    }
-
-    // Parse second file
-    const dv2 = new DataView(buffer2)
-    for (let i = 0; i < numPoints2; i++) {
-      const offset = i * pointSize
-      const x = dv2.getFloat32(offset, true)
-      const y = dv2.getFloat32(offset + 4, true)
-      const z = dv2.getFloat32(offset + 8, true)
-      const r = dv2.getUint8(offset + 12)
-      const g = dv2.getUint8(offset + 13)
-      const b = dv2.getUint8(offset + 14)
-
-      const targetIndex = (numPoints1 + i) * 3
-      this.fullPositions.set([x, y, z], targetIndex)
-      this.fullColors.set([r / 255, g / 255, b / 255], targetIndex)
-    }
-
-    this.updateLoadingProgress(90, "Creating particle system...")
-
-    const animationPointCount = Math.floor(totalPoints / 10)
-    const positions = new Float32Array(animationPointCount * 3)
-    const colors = new Float32Array(animationPointCount * 3)
-
-    // Sample every 10th point for animation
-    for (let i = 0; i < animationPointCount; i++) {
-      const sourceIndex = i * 10
-      positions.set(
-        [
-          this.fullPositions[sourceIndex * 3],
-          this.fullPositions[sourceIndex * 3 + 1],
-          this.fullPositions[sourceIndex * 3 + 2],
-        ],
-        i * 3,
-      )
-      colors.set(
-        [this.fullColors[sourceIndex * 3], this.fullColors[sourceIndex * 3 + 1], this.fullColors[sourceIndex * 3 + 2]],
-        i * 3,
-      )
-    }
-
-    // Create animation geometry with reduced points
-    const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3))
-
-    this.createParticleSystem(geometry)
+    Promise.all([this.loadSingleFile("./linkou_1.bin.gz"), this.loadSingleFile("./linkou_2.bin.gz")])
+      .then((results) => {
+        const [data1, data2] = results
+        if (data1 && data2) {
+          console.log("[v0] Full resolution files loaded successfully")
+          this.upgradeToFullResolution(data1, data2)
+        } else {
+          console.log("[v0] Full resolution files not available, keeping preview")
+        }
+      })
+      .catch((error) => {
+        console.log("[v0] Full resolution files load failed, keeping preview:", error)
+      })
   }
 
-  parseBinaryPointCloud(buffer) {
+  async loadSingleFile(url) {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
+      const compressed = await response.arrayBuffer()
+      const decompressed = window.pako.inflate(new Uint8Array(compressed)).buffer
+
+      return this.parseBinaryData(decompressed)
+    } catch (error) {
+      console.warn(`Failed to load ${url}:`, error)
+      return null
+    }
+  }
+
+  parseBinaryData(buffer) {
     const pointSize = 15 // 12 bytes float + 3 bytes color
     const numPoints = Math.floor(buffer.byteLength / pointSize)
 
-    if (numPoints === 0) {
-      console.warn("No valid points found in binary data")
-      this.createFallbackParticles()
-      return
-    }
-
-    this.fullPositions = new Float32Array(numPoints * 3)
-    this.fullColors = new Float32Array(numPoints * 3)
+    const positions = new Float32Array(numPoints * 3)
+    const colors = new Float32Array(numPoints * 3)
 
     const dv = new DataView(buffer)
     for (let i = 0; i < numPoints; i++) {
@@ -307,42 +271,125 @@ class PointCloudEffect {
       const g = dv.getUint8(offset + 13)
       const b = dv.getUint8(offset + 14)
 
-      this.fullPositions.set([x, y, z], i * 3)
-      this.fullColors.set([r / 255, g / 255, b / 255], i * 3)
+      positions.set([x, y, z], i * 3)
+      colors.set([r / 255, g / 255, b / 255], i * 3)
     }
 
-    this.updateLoadingProgress(90, "Creating particle system...")
-
-    const animationPointCount = Math.floor(numPoints / 10)
-    const positions = new Float32Array(animationPointCount * 3)
-    const colors = new Float32Array(animationPointCount * 3)
-
-    // Sample every 10th point for animation
-    for (let i = 0; i < animationPointCount; i++) {
-      const sourceIndex = i * 10
-      positions.set(
-        [
-          this.fullPositions[sourceIndex * 3],
-          this.fullPositions[sourceIndex * 3 + 1],
-          this.fullPositions[sourceIndex * 3 + 2],
-        ],
-        i * 3,
-      )
-      colors.set(
-        [this.fullColors[sourceIndex * 3], this.fullColors[sourceIndex * 3 + 1], this.fullColors[sourceIndex * 3 + 2]],
-        i * 3,
-      )
-    }
-
-    const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3))
-
-    this.createParticleSystem(geometry)
+    return { positions, colors }
   }
 
-  createParticleSystem(geometry) {
-    this.updateLoadingProgress(95, "Initializing 3D scene...")
+  createPreviewPointCloud(data1, data2) {
+    const totalPoints = (data1.positions.length + data2.positions.length) / 3
+    const mergedPositions = new Float32Array(totalPoints * 3)
+    const mergedColors = new Float32Array(totalPoints * 3)
+
+    mergedPositions.set(data1.positions, 0)
+    mergedPositions.set(data2.positions, data1.positions.length)
+    mergedColors.set(data1.colors, 0)
+    mergedColors.set(data2.colors, data1.colors.length)
+
+    console.log("[v0] Preview point cloud created with", totalPoints, "points")
+
+    // Apply transformations
+    const transformedData = this.transformPointCloudData(mergedPositions, mergedColors)
+
+    // Create particle system with preview data
+    this.createParticleSystemFromData(transformedData.positions, transformedData.colors)
+  }
+
+  upgradeToFullResolution(data1, data2) {
+    const totalPoints = (data1.positions.length + data2.positions.length) / 3
+    const mergedPositions = new Float32Array(totalPoints * 3)
+    const mergedColors = new Float32Array(totalPoints * 3)
+
+    mergedPositions.set(data1.positions, 0)
+    mergedPositions.set(data2.positions, data1.positions.length)
+    mergedColors.set(data1.colors, 0)
+    mergedColors.set(data2.colors, data1.colors.length)
+
+    console.log("[v0] Upgrading to full resolution with", totalPoints, "points")
+
+    // Store full resolution data for later upgrade
+    this.fullPositions = mergedPositions
+    this.fullColors = mergedColors
+
+    // Apply transformations
+    const transformedData = this.transformPointCloudData(mergedPositions, mergedColors)
+
+    // Replace current geometry with full resolution
+    const mainPointCloud = this.pointClouds[0]
+    if (mainPointCloud) {
+      mainPointCloud.geometry.dispose()
+
+      const geometry = new THREE.BufferGeometry()
+      geometry.setAttribute("position", new THREE.BufferAttribute(transformedData.positions, 3))
+      geometry.setAttribute("color", new THREE.BufferAttribute(transformedData.colors, 3))
+
+      geometry.attributes.position.needsUpdate = true
+      geometry.attributes.color.needsUpdate = true
+
+      mainPointCloud.geometry = geometry
+
+      // Adjust material for dense point cloud
+      if (totalPoints > 50000) {
+        mainPointCloud.material.size = 0.02
+      }
+
+      console.log("[v0] Successfully upgraded to full resolution")
+    }
+  }
+
+  transformPointCloudData(positions, colors) {
+    const tempGeometry = new THREE.BufferGeometry()
+    tempGeometry.setAttribute("position", new THREE.BufferAttribute(positions.slice(), 3))
+
+    // Apply same transformations as original system
+    tempGeometry.computeBoundingBox()
+    const box = tempGeometry.boundingBox
+    const center = new THREE.Vector3()
+    box.getCenter(center)
+    tempGeometry.translate(-center.x, -center.y, -center.z)
+
+    const size = new THREE.Vector3()
+    box.getSize(size)
+    const maxDim = Math.max(size.x, size.y, size.z)
+    const scale = 12 / maxDim
+    tempGeometry.scale(scale, scale, scale)
+
+    // Apply coordinate transformation (x, z, y)
+    const transformedPositions = tempGeometry.attributes.position.array
+    for (let i = 0; i < transformedPositions.length; i += 3) {
+      const x = transformedPositions[i]
+      const y = transformedPositions[i + 1]
+      const z = transformedPositions[i + 2]
+      transformedPositions[i] = x
+      transformedPositions[i + 1] = z
+      transformedPositions[i + 2] = y
+    }
+
+    tempGeometry.dispose()
+
+    return {
+      positions: transformedPositions,
+      colors: colors,
+    }
+  }
+
+  createParticleSystemFromData(positions, colors) {
+    const particleCount = positions.length / 3
+
+    // Create target positions from point cloud data
+    this.targetPositions = Array.from(positions)
+    this.targetColors = Array.from(colors)
+
+    this.createInitialPatterns(particleCount)
+
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(this.originalPositions), 3))
+    geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(this.originalColors), 3))
+
+    geometry.attributes.position.needsUpdate = true
+    geometry.attributes.color.needsUpdate = true
 
     const material = new THREE.PointsMaterial({
       size: 0.03,
@@ -352,50 +399,11 @@ class PointCloudEffect {
       sizeAttenuation: true,
     })
 
-    geometry.computeBoundingBox()
-    const box = geometry.boundingBox
-
-    const center = new THREE.Vector3()
-    box.getCenter(center)
-
-    geometry.translate(-center.x, -center.y, -center.z)
-
-    const size = new THREE.Vector3()
-    box.getSize(size)
-    const maxDim = Math.max(size.x, size.y, size.z)
-    const scale = 12 / maxDim
-    geometry.scale(scale, scale, scale)
-
-    const positions = geometry.attributes.position.array
-    const colors = geometry.attributes.color.array
-    const particleCount = positions.length / 3
-
-    this.targetPositions = []
-    this.targetColors = []
-    for (let i = 0; i < particleCount; i++) {
-      const x = positions[i * 3]
-      const y = positions[i * 3 + 1]
-      const z = positions[i * 3 + 2]
-
-      this.targetPositions.push(x, z, y)
-
-      this.targetColors.push(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2])
-    }
-
-    this.createInitialPatterns(particleCount)
-
-    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(this.originalPositions), 3))
-    geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(this.originalColors), 3))
-
     const pointCloud = new THREE.Points(geometry, material)
     this.pointClouds.push(pointCloud)
     this.scene.add(pointCloud)
 
-    this.updateLoadingProgress(100, "Ready!")
-    setTimeout(() => {
-      this.hideLoader()
-    }, 500)
-
+    console.log("[v0] Particle system created and added to scene, particle count:", particleCount)
     this.startAnimation()
   }
 
@@ -426,11 +434,9 @@ class PointCloudEffect {
   }
 
   createFallbackParticles() {
-    this.updateLoadingProgress(90, "Creating fallback particles...")
-
+    console.log("[v0] Creating fallback particles")
     const particleCount = 2000
 
-    // Create target positions in sphere formation
     this.targetPositions = []
     this.targetColors = []
     for (let i = 0; i < particleCount; i++) {
@@ -444,7 +450,6 @@ class PointCloudEffect {
         radius * Math.cos(phi),
       )
 
-      // Rainbow colors for fallback
       const hue = (i / particleCount) * 360
       const color = new THREE.Color().setHSL(hue / 360, 0.8, 0.6)
       this.targetColors.push(color.r, color.g, color.b)
@@ -452,9 +457,22 @@ class PointCloudEffect {
 
     this.createInitialPatterns(particleCount)
 
+    console.log(
+      "[v0] Fallback data lengths - positions:",
+      this.originalPositions.length,
+      "colors:",
+      this.originalColors.length,
+    )
+
     const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(this.originalPositions), 3))
-    geometry.setAttribute("color", new THREE.BufferAttribute(new Float32Array(this.originalColors), 3))
+    const positionArray = new Float32Array(this.originalPositions)
+    const colorArray = new Float32Array(this.originalColors)
+
+    geometry.setAttribute("position", new THREE.BufferAttribute(positionArray, 3))
+    geometry.setAttribute("color", new THREE.BufferAttribute(colorArray, 3))
+
+    geometry.attributes.position.needsUpdate = true
+    geometry.attributes.color.needsUpdate = true
 
     const material = new THREE.PointsMaterial({
       size: 0.05,
@@ -468,11 +486,7 @@ class PointCloudEffect {
     this.pointClouds.push(pointCloud)
     this.scene.add(pointCloud)
 
-    this.updateLoadingProgress(100, "Ready!")
-    setTimeout(() => {
-      this.hideLoader()
-    }, 500)
-
+    console.log("[v0] Fallback particles created and added to scene, particle count:", particleCount)
     this.startAnimation()
   }
 
@@ -562,7 +576,8 @@ class PointCloudEffect {
       )
     }
 
-    mainPointCloud.geometry.setAttribute("position", new THREE.Float32BufferAttribute(currentPositions, 3))
+    const positionArray = new Float32Array(currentPositions)
+    mainPointCloud.geometry.setAttribute("position", new THREE.BufferAttribute(positionArray, 3))
     mainPointCloud.geometry.attributes.position.needsUpdate = true
   }
 
@@ -585,7 +600,8 @@ class PointCloudEffect {
       )
     }
 
-    mainPointCloud.geometry.setAttribute("color", new THREE.Float32BufferAttribute(currentColors, 3))
+    const colorArray = new Float32Array(currentColors)
+    mainPointCloud.geometry.setAttribute("color", new THREE.BufferAttribute(colorArray, 3))
     mainPointCloud.geometry.attributes.color.needsUpdate = true
 
     if (progress >= 1 && this.fullPositions && this.fullColors) {
