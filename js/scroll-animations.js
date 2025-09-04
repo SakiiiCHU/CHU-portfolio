@@ -1,7 +1,6 @@
-// Scroll-based animations for value cards
-const cards = document.querySelectorAll(".value__item")
+const cards = document.querySelectorAll(".experience__item")
 
-function updateXPosition() {
+function updateXPosition(scrollData) {
   if (window.innerWidth <= 480) {
     cards.forEach((card) => {
       card.style.transform = "translateX(0)"
@@ -9,7 +8,7 @@ function updateXPosition() {
     return
   }
 
-  const centerY = window.innerHeight / 2
+  const centerY = scrollData.vh / 2
 
   cards.forEach((card) => {
     const rect = card.getBoundingClientRect()
@@ -17,29 +16,19 @@ function updateXPosition() {
     const distance = Math.abs(centerY - cardCenterY)
 
     const maxOffset = 60
-    const maxDistance = window.innerHeight / 2
+    const maxDistance = scrollData.vh / 2
     const ratio = Math.min(distance / maxDistance, 1)
 
     const offsetX = ratio * maxOffset
-    const scale = 1 + (1 - ratio) * 0.1 // Center card slightly larger
-    const opacity = 0.7 + (1 - ratio) * 0.3 // Center card more opaque
+    const scale = 1 + (1 - ratio) * 0.1
+    const opacity = 0.7 + (1 - ratio) * 0.3
 
     card.style.transform = `translateX(${offsetX}px) scale(${scale})`
     card.style.opacity = opacity
   })
 }
 
-let ticking = false
-function requestTick() {
-  if (!ticking) {
-    requestAnimationFrame(updateXPosition)
-    ticking = true
-    setTimeout(() => {
-      ticking = false
-    }, 16)
-  }
-}
+window.scrollBus.subscribe(updateXPosition)
 
-window.addEventListener("scroll", requestTick)
-window.addEventListener("resize", updateXPosition)
-updateXPosition()
+// Initial call for setup
+updateXPosition({ y: window.scrollY, vh: window.innerHeight })

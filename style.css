@@ -20,6 +20,7 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* Removed scrollbar-gutter: stable both-edges that was causing blank space on left */
 }
 
 body {
@@ -152,6 +153,7 @@ img {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 .hero__top-left,
@@ -212,6 +214,14 @@ img {
 .hero__bottom-right::before {
   content: "↓";
   margin-right: 8px;
+}
+
+/* Added hero__title--stretch modifier class */
+.hero__title--stretch {
+  animation: stretchX linear both;
+  animation-timeline: view();
+  animation-range: cover 0% cover 100%;
+  will-change: transform, letter-spacing;
 }
 
 /* Section: CONCEPT */
@@ -363,7 +373,8 @@ img {
 }
 
 /* Section: STICKY VALUE */
-.sticky-value {
+/* Renamed sticky-value to experience */
+.experience {
   min-height: 220vh;
   padding: 14vh 0 16vh;
   position: relative;
@@ -376,13 +387,15 @@ img {
   padding: 0 var(--space);
 }
 
-.value__grid--sticky {
+/* Renamed value__grid--sticky to experience__layout */
+.experience__layout {
   display: grid;
   grid-template-columns: 1fr 1.6fr;
   gap: clamp(24px, 4vw, 64px);
 }
 
-.value__left {
+/* Renamed value__left to experience__aside */
+.experience__aside {
   position: sticky;
   top: 12vh;
   align-self: start;
@@ -401,7 +414,8 @@ img {
   display: inline-block;
 }
 
-.circle {
+/* Renamed circle to experience__avatar */
+.experience__avatar {
   /* Reduced circle size by 20% (clamp values: 176px->220px, 22.4vw->28vw, 288px->360px) */
   width: clamp(176px, 22.4vw, 288px);
   aspect-ratio: 1 / 1;
@@ -418,22 +432,22 @@ img {
   animation-range: entry 0% exit 100%;
 }
 
-.circle::before,
-.circle::after {
+.experience__avatar::before,
+.experience__avatar::after {
   content: "";
   position: absolute;
   border-radius: 50%;
   border: 2px solid var(--ring);
 }
 
-.circle::before {
+.experience__avatar::before {
   inset: -18px;
   animation: ring1 1 linear both;
   animation-timeline: view();
   animation-range: entry 0% exit 100%;
 }
 
-.circle::after {
+.experience__avatar::after {
   inset: -46px;
   opacity: 0.6;
   animation: ring2 1 linear both;
@@ -441,11 +455,13 @@ img {
   animation-range: entry 0% exit 100%;
 }
 
-.value__right {
+/* Renamed value__right to experience__list */
+.experience__list {
   padding-left: 40px;
+  content-visibility: auto;
 }
 
-.value__right .value__title {
+.experience__list .value__title {
   font-size: clamp(23px, 3.8vw, 46px);
   line-height: 1.1;
   margin-bottom: 18px;
@@ -516,12 +532,14 @@ img {
     grid-template-columns: 1fr 1fr;
   }
 
-  .value__grid--sticky {
+  /* Renamed value__grid--sticky to experience__layout */
+  .experience__layout {
     grid-template-columns: 1fr;
     gap: 2vh;
   }
 
-  .value__left {
+  /* Renamed value__left to experience__aside */
+  .experience__aside {
     position: static;
     top: auto;
   }
@@ -535,15 +553,32 @@ img {
     transition: none;
   }
 
-  .circle {
+  .experience__avatar {
     margin: 0 auto;
   }
 
-  .experience__title {
-    display: block;
-    margin: 0 auto 24px auto;
-    text-align: center;
-    max-width: 90%;
+  /* Renamed value__right to experience__list */
+  .experience__list {
+    padding-left: 0;
+  }
+
+  /* Updated sticky-value references to experience */
+  .experience .experience__layout {
+    text-align: left;
+  }
+
+  .experience .experience__aside,
+  .experience .experience__list {
+    text-align: left;
+  }
+
+  .experience .experience__title {
+    text-align: left;
+    margin: 0 0 24px 0;
+  }
+
+  .experience .experience__avatar {
+    margin: 0 auto;
   }
 }
 
@@ -608,33 +643,28 @@ img {
     grid-template-columns: 1fr;
   }
 
-  .value__right {
+  /* Renamed value__right to experience__list */
+  .experience__list {
     padding-left: 0;
   }
 
-  .sticky-value .value__grid--sticky {
+  /* Updated sticky-value references to experience */
+  .experience .experience__layout {
     text-align: left;
   }
 
-  .sticky-value .value__left,
-  .sticky-value .value__right {
+  .experience .experience__aside,
+  .experience .experience__list {
     text-align: left;
   }
 
-  .sticky-value .experience__title {
+  .experience .experience__title {
     text-align: left;
     margin: 0 0 24px 0;
   }
 
-  .sticky-value .circle {
+  .experience .experience__avatar {
     margin: 0 auto;
-  }
-
-  .experience__title {
-    display: block;
-    margin: 0 auto 24px auto;
-    text-align: center;
-    max-width: 90%;
   }
 }
 
@@ -658,7 +688,7 @@ img {
     font-size: 20px;
   }
 
-  .value__item {
+  .experience__item {
     transform: translateX(0);
   }
 
@@ -726,18 +756,20 @@ img {
   }
 }
 
-.value__item {
+/* Renamed value__item to experience__item */
+.experience__item {
   padding: 10vh 0;
   border-bottom: 1px solid #dcd8d3;
-  will-change: transform;
+  will-change: transform, opacity;
   transition: transform 0.3s ease;
 }
 
-.value__item:first-child {
+.experience__item:first-child {
   border-top: 1px solid #dcd8d3;
 }
 
-.slide-text {
+/* Renamed slide-text to concept__headline--slide */
+.concept__headline--slide {
   position: relative;
   overflow: hidden;
   margin: 0 auto;
@@ -751,7 +783,7 @@ img {
   padding: 0;
 }
 
-.slide-text span {
+.concept__headline--slide span {
   display: block;
   margin: 0;
   padding: 0;
@@ -762,32 +794,32 @@ img {
 }
 
 /* Initial positions: first line from left, second line from right */
-.slide-text span:first-child {
+.concept__headline--slide span:first-child {
   --tx: -30vw;
 }
-.slide-text span:last-child {
+.concept__headline--slide span:last-child {
   --tx: 30vw;
 }
 
 /* Enter animation: move to center + fade in (second line slightly delayed) */
-.slide-text.is-in span {
+.concept__headline--slide.is-in span {
   opacity: 1;
   transform: translateX(0);
 }
-.slide-text.is-in span:last-child {
+.concept__headline--slide.is-in span:last-child {
   transition-delay: 0.08s;
 }
 
 /* Exit animation: both move left when leaving viewport */
-.slide-text.is-out span,
-.slide-text.leaving span {
+.concept__headline--slide.is-out span,
+.concept__headline--slide.leaving span {
   opacity: 0;
   transform: translateX(-30vw);
 }
 
 /* Reduced motion preference support */
 @media (prefers-reduced-motion: reduce) {
-  .slide-text span {
+  .concept__headline--slide span {
     transition: none;
     transform: none !important;
     opacity: 1 !important;

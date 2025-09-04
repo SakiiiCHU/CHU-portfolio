@@ -3,6 +3,26 @@ import * as THREE from "three"
 
 let simulatedProgress = 0
 let animationFrameId
+let isHeroVisible = true
+const heroObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      isHeroVisible = entry.isIntersecting
+    })
+  },
+  { threshold: 0.1 },
+)
+
+let isScrollingForPixelRatio = false
+let scrollTimeout = null
+
+window.scrollBus.subscribe(() => {
+  isScrollingForPixelRatio = true
+  clearTimeout(scrollTimeout)
+  scrollTimeout = setTimeout(() => {
+    isScrollingForPixelRatio = false
+  }, 200)
+})
 
 function simulateProgressLoading(onComplete) {
   const targetProgress = 90 + Math.random() * 10 // 模擬最多90-99%
@@ -60,6 +80,11 @@ class PointCloudEffect {
 
     this.init()
     this.setupPageVisibilityHandling()
+
+    const heroElement = document.getElementById("hero")
+    if (heroElement) {
+      heroObserver.observe(heroElement)
+    }
   }
 
   updateLoadingProgress(progress, text = "") {
@@ -171,7 +196,7 @@ class PointCloudEffect {
       alpha: true,
     })
     this.renderer.setSize(window.innerWidth, window.innerHeight)
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     this.renderer.setClearColor(0x000000, 0)
 
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6)
@@ -522,7 +547,20 @@ class PointCloudEffect {
   }
 
   animate() {
+    if (!isHeroVisible) {
+      this.animationId = requestAnimationFrame(() => this.animate())
+      return
+    }
+
     this.animationId = requestAnimationFrame(() => this.animate())
+
+    const currentPixelRatio = isScrollingForPixelRatio
+      ? Math.max(0.5, Math.min(window.devicePixelRatio, 1.5) - 0.5)
+      : Math.min(window.devicePixelRatio, 1.5)
+
+    if (this.renderer.getPixelRatio() !== currentPixelRatio) {
+      this.renderer.setPixelRatio(currentPixelRatio)
+    }
 
     const mainPointCloud = this.pointClouds[0]
 
