@@ -226,11 +226,27 @@ img {
 
 /* Section: CONCEPT */
 .concept {
-  min-height: 120vh;
+  /* Set concept section to exactly 100vh for proper snap behavior */
+  min-height: 100vh;
+  height: 100vh;
   display: grid;
   place-items: center;
   padding: 12vh var(--space);
-  /* Removed overflow-x: hidden to allow marquee animation to work */
+  /* Added scroll-snap-align for section snapping */
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.concept--locked {
+  scroll-snap-type: y mandatory;
+}
+
+.concept--locked .concept__headline--slide {
+  /* Lock the headline in place during snap */
+  position: sticky;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
 }
 
 .concept__wrap {
@@ -326,51 +342,213 @@ img {
   transition: all 0.4s ease;
 }
 
-/* Section: VALUE */
-.value {
-  min-height: 130vh;
-  padding: 14vh var(--space);
+/* Section: SKILLS */
+/* =========================
+   SKILLS – Make intersection visible (keep text)
+========================= */
+
+.skills-venn{
+  position: relative;
+  width: min(980px, calc(100vw - 2 * var(--space)));
+  min-height: 760px;
+  margin: 0 auto;
+  padding: 56px 24px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.35);
+  overflow: hidden; /* 先保持整齊，想更自由再改 visible */
   display: grid;
-  gap: 8vh;
-  align-content: start;
+  place-items: center;
 }
 
-.value__head {
+/* (可選) WOWGOW 的水平虛線 */
+.skills-venn::after{
+  content:"";
+  position:absolute;
+  left: 6%;
+  right: 6%;
+  top: 50%;
+  border-top: 1px dashed rgba(0,0,0,0.14);
+  z-index: 0;
+}
+
+/* 中央核心一定要在最上層，避免被壓到 */
+.skills-core{
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  text-align: center;
+  transform: translateY(-2px);
+}
+
+.skills-core__title{
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.25;
+}
+
+.skills-core__sub{
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: rgba(0,0,0,0.55);
+}
+
+/* 交集感核心：透明 + 混色 + 玻璃感 */
+.venn-circle{
+  --size: 270px;
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 999px;
+
+  transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y)));
+  border: 1px solid rgba(0,0,0,0.18);
+
+  /* 透明玻璃：讓交集自然變深 */
+  background: rgba(255,255,255,0.22);
+  mix-blend-mode: multiply;         /* ✅ 交集區會更深（重點） */
+  backdrop-filter: blur(8px);
+
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 26px;
+
+  z-index: 5;
+  transition: transform 220ms ease, border-color 220ms ease, opacity 220ms ease, box-shadow 220ms ease;
 }
 
-.value__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  max-width: 1200px;
+/* 序號 */
+.venn-circle::before{
+  content: "(" attr(data-n) ")";
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: rgba(0,0,0,0.55);
 }
 
-.value__card {
-  border-top: 1px solid #ddd;
-  padding-top: 22px;
+/* ✅ 標題不要放正中間，移到上方一點，不要擋交集中心 */
+.venn-circle h3{
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  transform: translateY(-14px);
 }
 
-.value__no {
-  /* Reduced font size from 13px to 11px (15% reduction) */
-  font-size: 11px;
-  opacity: 0.6;
-  margin-bottom: 10px;
+/* tags：平常隱藏，hover 才出現 */
+.venn-tags{
+  margin-top: 10px;
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  transform: translateY(6px);
 }
 
-.value__title {
-  font-weight: 600;
-  /* Reduced font size clamp values by ~17% (15px->18px, 1.8vw->2.2vw, 20px->24px) */
-  font-size: clamp(15px, 1.8vw, 20px);
-  margin-bottom: 10px;
+.venn-tags span{
+  font-size: 12px;
+  color: rgba(0,0,0,0.75);
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.55);
+  border-radius: 999px;
+  padding: 6px 10px;
 }
 
-.value__desc {
-  color: var(--muted);
+/* ✅ hover：該圈浮起、其他圈變淡 → 交集層次感馬上出現 */
+.skills-venn:hover .venn-circle{
+  opacity: 0.58;
 }
+
+.venn-circle:hover{
+  opacity: 1 !important;
+  border-color: rgba(0,0,0,0.35);
+  transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1.03);
+  z-index: 30;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.12);
+}
+
+.venn-circle:hover .venn-tags{
+  display: flex;
+}
+
+/* RWD：手機沒有 hover，改卡片式並直接顯示 tags */
+@media (max-width: 900px){
+  .skills-venn{
+    min-height: auto;
+    height: auto;
+    padding: 18px;
+    overflow: visible;
+    display: block;
+  }
+  .skills-venn::after{ display:none; }
+
+  .skills-core{
+    position: relative;
+    text-align: left;
+    margin: 6px 0 18px;
+  }
+
+  .venn-circle{
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none !important;
+    width: 100%;
+    height: auto;
+    min-height: 120px;
+    border-radius: 18px;
+    padding: 18px;
+    margin: 10px 0;
+    mix-blend-mode: normal;
+    opacity: 1;
+  }
+
+  .venn-circle h3{
+    transform: none;
+    margin-top: 10px;
+  }
+
+  .venn-tags{
+    display: flex;
+    justify-content: flex-start;
+    transform: none;
+  }
+}
+
+/* core text moved above venn */
+.skills-core--top{
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.skills-core__title{
+  font-size: 19px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.75);
+}
+
+.skills-core__sub{
+  margin-top: 6px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: rgba(0,0,0,0.55);
+}
+
 
 /* Section: STICKY VALUE */
 /* Renamed sticky-value to experience */
@@ -462,7 +640,7 @@ img {
 }
 
 .experience__list .value__title {
-  font-size: clamp(23px, 3.8vw, 46px);
+  font-size: clamp(16px, 3.8vw, 32px);
   line-height: 1.1;
   margin-bottom: 18px;
   overflow: visible;

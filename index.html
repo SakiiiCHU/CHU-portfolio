@@ -25,7 +25,7 @@
     <nav class="nav">
       <a href="#hero">TOP</a>
       <a href="#concept">CONCEPT</a>
-      <a href="#value">VALUE</a>
+      <a href="#skills">SKILLS</a>
       <!-- Updated anchor from #sticky-value to #experience -->
       <a href="#experience">EXPERIENCE</a>
       <!-- Removed unused pointcloud navigation link -->
@@ -82,38 +82,69 @@
       </div>
     </section>
 
-    <!-- VALUE -->
-    <section id="value" class="value">
-      <div class="value__head">
-        <h3 class="reveal">Our Value</h3>
-        <p class="reveal" style="max-width: 560px; color: var(--muted)">
-          ビジュアルとロジックの橋渡し。要件の解像度を上げ、正しく設計し、最後まで作り切る。
-        </p>
+    <!-- ＳＫＩＬＬ -->
+<!-- SKILLS (Complete replacement) -->
+<section id="skills" class="skills">
+
+  <div class="skills-venn" aria-label="Skills intersection diagram">
+
+    <!-- Title INSIDE the white frame (top-aligned) -->
+    <div class="skills-core skills-core--top" aria-hidden="true">
+      <div class="skills-core__title">Spatial Data Visualization</div>
+      <div class="skills-core__sub">GIS × 3D × Web</div>
+    </div>
+
+    <!-- (01) Spatial Analysis -->
+    <article class="venn-circle" data-n="01" style="--x:-165px; --y:-10px;">
+      <h3>Spatial Analysis</h3>
+      <div class="venn-tags">
+        <span>ArcGIS</span>
+        <span>QGIS</span>
+        <span>ERDAS Imagine</span>
+        <span>Caris</span>
+        <span>Remote Sensing</span>
       </div>
-      <div class="value__grid">
-        <article class="value__card reveal">
-          <div class="value__no">(01)</div>
-          <h4 class="value__title">Spatial Thinking</h4>
-          <p class="value__desc">
-            空間情報、動線分析、構造把握など。測量や建築的な視点で情報を整理し、画面構成に落とし込む。
-          </p>
-        </article>
-        <article class="value__card reveal">
-          <div class="value__no">(02)</div>
-          <h4 class="value__title">Interaction & Flow</h4>
-          <p class="value__desc">
-            スクロール、視線、操作感。動きすぎず、止まりすぎない。リズムのあるUIを目指す。
-          </p>
-        </article>
-        <article class="value__card reveal">
-          <div class="value__no">(03)</div>
-          <h4 class="value__title">Handcrafted Interfaces</h4>
-          <p class="value__desc">
-            HTML/CSSをベースに、構造・意味・可読性を意識したコードで実装。過剰な演出より、静かで気持ちの良い使いやすさを大切にする。
-          </p>
-        </article>
+    </article>
+
+    <!-- (02) 3D Reconstruction -->
+    <article class="venn-circle" data-n="02" style="--x:0px; --y:-115px;">
+      <h3>3D Reconstruction</h3>
+      <div class="venn-tags">
+        <span>LiDAR</span>
+        <span>Photogrammetry</span>
+        <span>Pix4Dmapper</span>
+        <span>SketchUp</span>
+        <span>AutoCAD</span>
+        <span>UAV</span>
       </div>
-    </section>
+    </article>
+
+    <!-- (03) Web Visualization -->
+    <article class="venn-circle" data-n="03" style="--x:165px; --y:-10px;">
+      <h3>Web Visualization</h3>
+      <div class="venn-tags">
+        <span>Three.js</span>
+        <span>React</span>
+        <span>Leaflet</span>
+        <span>Interactive Maps</span>
+        <span>UI Motion</span>
+      </div>
+    </article>
+
+    <!-- (04) Data Systems -->
+    <article class="venn-circle" data-n="04" style="--x:0px; --y:125px;">
+      <h3>Data Systems</h3>
+      <div class="venn-tags">
+        <span>Node.js</span>
+        <span>MySQL</span>
+        <span>MongoDB</span>
+        <span>Data Processing</span>
+      </div>
+    </article>
+  </div>
+
+  <div class="skills-hint">Hover circles to reveal details.</div>
+</section>
 
     <!-- STICKY VALUE SECTION -->
     <!-- Renamed sticky-value to experience -->
@@ -252,6 +283,8 @@
 
     <!-- JS start from here -->
     <script src="js/scroll-bus.js"></script>
+    <!-- Added concept scroll manager before other scroll scripts -->
+    <script src="js/concept-scroll.js"></script>
     <script src="js/scroll-animations.js"></script>
     <script src="js/text-effects.js"></script>
     <script src="js/smooth-scroll.js"></script>

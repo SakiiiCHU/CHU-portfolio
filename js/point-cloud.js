@@ -417,7 +417,7 @@ class PointCloudEffect {
     geometry.attributes.color.needsUpdate = true
 
     const material = new THREE.PointsMaterial({
-      size: 0.03,
+      size: 0.02,
       vertexColors: true,
       transparent: true,
       opacity: 0.9,
@@ -432,31 +432,39 @@ class PointCloudEffect {
     this.startAnimation()
   }
 
-  createInitialPatterns(particleCount) {
-    this.originalPositions = []
-    this.originalColors = []
-    this.particleDelays = []
+// 開場形狀改為「面向相機的圓盤」(與既有程式相容：Array + push)
+createInitialPatterns(particleCount) {
+  const R = 3.6;       // 圓盤半徑（可微調）
+  const zJitter = 0.08; // 圓盤厚度（越小越扁）
 
-    for (let i = 0; i < particleCount; i++) {
-      const radius = 4 + Math.random() * 8
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.random() * Math.PI
+  this.originalPositions = [];
+  this.originalColors = [];
+  this.particleDelays = [];
 
-      this.originalPositions.push(
-        radius * Math.sin(phi) * Math.cos(theta),
-        radius * Math.sin(phi) * Math.sin(theta),
-        radius * Math.cos(phi),
-      )
+  for (let i = 0; i < particleCount; i++) {
+    // 讓半徑均勻分布：r = sqrt(rand) * R（避免中心過密）
+    const r = Math.sqrt(Math.random()) * R;
+    const theta = Math.random() * Math.PI * 2;
 
-      this.originalColors.push(
-        0.1 + Math.random() * 0.2, // Very dim colors for background effect
-        0.2 + Math.random() * 0.3,
-        0.3 + Math.random() * 0.4,
-      )
+    const x = r * Math.cos(theta);
+    const y = r * Math.sin(theta);
+    const z = (Math.random() - 0.5) * zJitter; // 圓盤有一點厚度
 
-      this.particleDelays.push(Math.random() * 0.5)
-    }
+    this.originalPositions.push(x, y, z);
+
+    // 柔和起始色（可調）
+    this.originalColors.push(
+      0.22 + Math.random() * 0.15,
+      0.28 + Math.random() * 0.18,
+      0.32 + Math.random() * 0.20
+    );
+
+    // 內圈先出現、外圈稍後（讓圓更平順）
+    const radial = r / R; // 0~1
+    this.particleDelays.push(Math.random() * 0.25 + radial * 0.35);
   }
+}
+
 
   createFallbackParticles() {
     console.log("[v0] Creating fallback particles")
