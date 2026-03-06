@@ -585,7 +585,7 @@ img {
   line-height: 1.06;
   letter-spacing: -0.02em;
   /* Reduced font size clamp values by ~17% (37px->44px, 8.5vw->10vw, 100px->120px) */
-  font-size: clamp(37px, 8.5vw, 100px);
+  font-size: clamp(28px, 8.5vw, 65px);
 }
 
 .experience__title span {
@@ -644,6 +644,12 @@ img {
   line-height: 1.1;
   margin-bottom: 18px;
   overflow: visible;
+}
+
+.experience__role{
+font-size:18px;
+font-weight:600;
+margin:6px 0 10px 0;
 }
 
 /* Consolidated and organized responsive breakpoints */
