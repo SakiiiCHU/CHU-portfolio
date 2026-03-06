@@ -90,15 +90,18 @@ class PointCloudEffect {
   updateLoadingProgress(progress, text = "") {
     updateProgressBar(progress)
   }
+hideLoader() {
+  if (this.loaderElement) {
+    this.loaderElement.style.opacity = "0"
 
-  hideLoader() {
-    if (this.loaderElement) {
-      this.loaderElement.style.opacity = "0"
-      setTimeout(() => {
-        this.loaderElement.style.display = "none"
-      }, 500)
-    }
+    setTimeout(() => {
+      this.loaderElement.style.display = "none"
+      document.body.classList.remove("loading-lock")
+    }, 500)
+  } else {
+    document.body.classList.remove("loading-lock")
   }
+}
 
   setupPageVisibilityHandling() {
     const cleanup = () => {
@@ -706,6 +709,12 @@ createInitialPatterns(particleCount) {
 
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
+  // safety unlock: even if loading fails or is too slow,
+  // page will become scrollable after 2500ms
+  setTimeout(() => {
+    document.body.classList.remove("loading-lock")
+  }, 3000)
+
   try {
     new PointCloudEffect()
   } catch (error) {
@@ -714,5 +723,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loader) {
       loader.style.display = "none"
     }
+    document.body.classList.remove("loading-lock")
   }
 })
